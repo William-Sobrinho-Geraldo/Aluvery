@@ -4,12 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.alura.aluvery.model.Product
-import br.com.alura.aluvery.sampledata.sampleProducts
 import br.com.alura.aluvery.sampledata.sampleSections
 import br.com.alura.aluvery.ui.components.CardProductItem
 import br.com.alura.aluvery.ui.components.ProductsSection
@@ -17,35 +16,16 @@ import br.com.alura.aluvery.ui.components.SearchTextField
 import br.com.alura.aluvery.ui.theme.AluveryTheme
 
 class HomeScreenUiState(
-    val sections : Map<String, List<Product>> = emptyMap(),
-    private val products : List<Product> = emptyList(),
-    searchText: String = "") {
-
-    var text by mutableStateOf(searchText)
-        private set
-
-    val searchedProducts get() =
-        if (text.isNotBlank()) {
-            sampleProducts.filter(containsInNameOrDescription()) + products.filter(containsInNameOrDescription())
-        } else emptyList()
-
-    private fun containsInNameOrDescription() = { product: Product ->
-        product.name.contains(
-            text,
-            ignoreCase = true,
-        ) ||  product.description?.contains(
-                    text,
-                    ignoreCase = true,
-                ) ?: false
-    }
+    val sections: Map<String, List<Product>> = emptyMap(),
+    val searchedProducts: List<Product> = emptyList(),
+    val searchText: String = "",
+    val onSearchChange: (String) -> Unit = {},
+) {
 
     fun isShowSections(): Boolean {
-        return text.isBlank()
+        return searchText.isBlank()
     }
 
-    val onSearchChange: (String) -> Unit = { searchText ->
-        text = searchText
-    }
 }
 
 @Composable
@@ -54,10 +34,8 @@ fun HomeScreen(
 ) {
     Column {
         val sections = state.sections
-        val text = state.text
-        val searchedProducts = remember(text) {
-            state.searchedProducts
-        }
+        val text = state.searchText
+        val searchedProducts = state.searchedProducts
         SearchTextField(
             searchText = text,
             onSearchChange = state.onSearchChange,
@@ -89,6 +67,7 @@ fun HomeScreen(
                         product = p,
                         Modifier.padding(horizontal = 16.dp),
                     )
+
                 }
             }
         }
@@ -100,7 +79,7 @@ fun HomeScreen(
 private fun HomeScreenPreview() {
     AluveryTheme {
         Surface {
-            HomeScreen(HomeScreenUiState(sections = sampleSections) )
+            HomeScreen(HomeScreenUiState(sections = sampleSections))
         }
     }
 }
